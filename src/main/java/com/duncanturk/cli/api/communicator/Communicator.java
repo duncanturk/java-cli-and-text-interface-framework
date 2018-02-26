@@ -36,9 +36,10 @@ public interface Communicator {
         if (counterStyle == AUTO)
             counterStyle = options.size() > 26 ? DECIMAL : LOWER_ALPHA;
         for (String optionString : options) {
-            String str = counterStyle.get(optionChar++);
+            String str = counterStyle.get(optionChar);
             actionMap.put(str, optionChar);
             sb.append("(").append(str).append(") ").append(optionString).append("\n");
+            optionChar++;
         }
         sb.deleteCharAt(sb.length() - 1);
 
@@ -46,7 +47,7 @@ public interface Communicator {
         Optional<TaskTerminationType> ret = ask(sb.toString(), actionMap::get, selected::set);
         if (ret.isPresent()) {
             return ret;
-        } else if (selected.get() > 0) {
+        } else if (selected.get() >= 0) {
             handler.accept(converter.apply(selected.get()));
             return Optional.empty();
         } else {
@@ -62,8 +63,20 @@ public interface Communicator {
         return ask(options.stream().map(Object::toString).collect(Collectors.toList()), ((Function<Integer, O>) options::get).andThen(converter)::apply, handler);
     }
 
+    default <O> Optional<TaskTerminationType> ask(List<? extends O> options, Consumer<? super O> handler) {
+        return ask(options, o -> o, handler);
+    }
+
     default <T> Optional<TaskTerminationType> askString(List<String> options, Function<String, ? extends T> converter, Consumer<? super T> handler) {
         return ask(options, ((Function<Integer, String>) options::get).andThen(converter)::apply, handler);
+    }
+
+    default Optional<TaskTerminationType> askInt(String question, Consumer<Integer> handler) {
+        return ask(question, Integer::parseInt, handler);
+    }
+
+    default Optional<TaskTerminationType> askLong(String question, Consumer<Long> handler) {
+        return ask(question, Long::parseLong, handler);
     }
 
     default Optional<TaskTerminationType> askDouble(String question, Consumer<Double> handler) {
