@@ -5,7 +5,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.concurrent.atomic.AtomicReference;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.*;
 
 class CommunicatorTest {
     private Communicator communicator;
@@ -18,13 +18,13 @@ class CommunicatorTest {
     void testAskStringValue() {
         communicator = new PreparedInputCommunicator("a", "java", "", "\r");
         AtomicReference<String> val = new AtomicReference<>(null);
-        communicator.askString("say a", val::set);
+        assertFalse(communicator.askString("say a", val::set).isPresent());
         assertEquals("a", val.get());
-        communicator.askString("say java", val::set);
+        assertFalse(communicator.askString("say java", val::set).isPresent());
         assertEquals("java", val.get());
-        communicator.askString("silence!", val::set);
+        assertFalse(communicator.askString("silence!", val::set).isPresent());
         assertEquals("", val.get());
-        communicator.askString("make a step", val::set);
+        assertFalse(communicator.askString("make a step", val::set).isPresent());
         assertEquals("\r", val.get());
     }
 
@@ -32,15 +32,15 @@ class CommunicatorTest {
     void testAskDoubleValue() {
         communicator = new PreparedInputCommunicator("0", "0.0", "42", "-3.5", "5e3");
         AtomicReference<Double> val = new AtomicReference<>();
-        communicator.askDouble("one minus one ", val::set);
+        assertFalse(communicator.askDouble("one minus one ", val::set).isPresent());
         assertEquals(Double.valueOf(0), val.get());
-        communicator.askDouble("tow times zero is ", val::set);
+        assertFalse(communicator.askDouble("tow times zero is ", val::set).isPresent());
         assertEquals(Double.valueOf(0), val.get());
-        communicator.askDouble("the answer is ", val::set);
+        assertFalse(communicator.askDouble("the answer is ", val::set).isPresent());
         assertEquals(Double.valueOf(42), val.get());
-        communicator.askDouble("-3.5", val::set);
+        assertFalse(communicator.askDouble("-3.5", val::set).isPresent());
         assertEquals(Double.valueOf(-3.5), val.get());
-        communicator.askDouble("0100000010110011100010000000000000000000000000000000000000000000", val::set);
+        assertFalse(communicator.askDouble("0100000010110011100010000000000000000000000000000000000000000000", val::set).isPresent());
         assertEquals(Double.valueOf(5000), val.get());
     }
 }

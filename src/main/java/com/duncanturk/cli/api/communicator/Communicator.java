@@ -16,6 +16,8 @@ import java.util.function.IntFunction;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
+import static com.duncanturk.cli.api.communicator.CounterStyle.*;
+
 public interface Communicator {
     void print(String text);
 
@@ -27,16 +29,15 @@ public interface Communicator {
         return askRes.orElseGet(action.get());
     }
 
-    default <T> Optional<TaskTerminationType> ask(List<String> options, IntFunction<? extends T> converter, Consumer<? super T> handler, boolean forceNumberedSelection) {
+    default <T> Optional<TaskTerminationType> ask(List<String> options, IntFunction<? extends T> converter, Consumer<? super T> handler, CounterStyle counterStyle) {
         int optionChar = 0;
         Map<String, Integer> actionMap = new HashMap<>();
         StringBuilder sb = new StringBuilder();
+        if (counterStyle == AUTO)
+            counterStyle = options.size() > 26 ? DECIMAL : LOWER_ALPHA;
         for (String optionString : options) {
-            String str;
-            if (forceNumberedSelection || options.size() > 26)
-                actionMap.put(str = ("" + ++optionChar), optionChar);
-            else
-                actionMap.put(str = ("" + ((optionChar++) + 'a')), optionChar);
+            String str = counterStyle.get(optionChar++);
+            actionMap.put(str, optionChar);
             sb.append("(").append(str).append(") ").append(optionString).append("\n");
         }
         sb.deleteCharAt(sb.length() - 1);
@@ -54,7 +55,7 @@ public interface Communicator {
     }
 
     default <T> Optional<TaskTerminationType> ask(List<String> options, IntFunction<? extends T> converter, Consumer<? super T> handler) {
-        return ask(options, converter, handler, false);
+        return ask(options, converter, handler, AUTO);
     }
 
     default <O, T> Optional<TaskTerminationType> ask(List<? extends O> options, Function<? super O, ? extends T> converter, Consumer<? super T> handler) {
